@@ -58,7 +58,7 @@ def CryptoCalc(cant):
     print()
 
     # Cargamos la libreria
-    libconversion = ctypes.CDLL('./libconversion.so')
+    libconversion = ctypes.CDLL('./lib/libconverter.so')
 
     # Definimos los tipos de args de la función
     libconversion._convert.argtypes = (ctypes.c_float, ctypes.c_float,)
