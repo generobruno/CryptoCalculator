@@ -48,8 +48,9 @@ segment .bss
 ; These labels refer to double words used to store the inputs
 ;
 ;	Parameters:
-;	int a at [ebp + 8]
-; int b at [ebp +12]
+;	float a at [ebp + 8]
+; float b at [ebp + 12]
+; float * res at [ebp + 16]	
 
 ;
 ; code is put in the .text segment
@@ -61,28 +62,18 @@ mul:
         pusha
 
 
-				dump_stack 1, 2, 4				; print out stack from ebp-8 to ebp+16
-        mov     eax, [ebp+8]      ; eax = a
-        mov			ebx, [ebp+12]			; ebx = b
-        imul    ebx, eax     			; ebx = ebx * eax (a * b)
-        dump_regs 1               ; dump out register values
-        dump_mem 2, outmsg1, 1    ; dump out memory
+				dump_stack 1, 2, 4						; print out stack from ebp-8 to ebp+16
+				fld 		dword [ebp+8]					; stack: a
+				fld			dword [ebp+12]				; stack: b, a
+				fmulp 	st1										; stack: a*b
+				mov			ebx, dword [ebp+16]		;store in ebx direction of res
+				fstp		dword [ebx]						; store (in res) and pop stack
+        dump_regs 1               		; dump out register values
+        dump_mem 2, outmsg1, 1    		; dump out memory
 ;
-; next print out result message as series of steps
+; leave
 ;
-        mov     eax, outmsg1
-        call    print_string      ; print out first message
-        mov     eax, [ebp+8]     	; 
-        call    print_int         ; print out input1
-        mov     eax, outmsg2
-        call    print_string      ; print out second message
-        mov     eax, [ebp+12]
-        call    print_int         ; print out input2
-        mov     eax, outmsg3
-        call    print_string      ; print out third message
-        mov     eax, ebx
-        call    print_int         ; print out sum (ebx)
-        call    print_nl          ; print new-line
+        
 
         popa
         leave                     
