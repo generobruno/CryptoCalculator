@@ -2,7 +2,6 @@
 
 #include "cdecl.h"
 
-
 void PRE_CDECL mul( float, float, float *  ) POST_CDECL; /* prototype for assembly routine */
 
 int main(void)

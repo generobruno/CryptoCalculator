@@ -10,7 +10,7 @@
 ;
 
 
-%include "asm_io.inc"
+%include "src/ASM/asm_io.inc"
 ;
 ; initialized data is put in the .data segment
 ;
@@ -38,28 +38,27 @@ segment .text
         global  mul
 mul:
      
-        push	ebp
-        mov		ebp, esp
-        push	ebx
+        ;push	ebp
+        ;mov		ebp, esp
+        ;push	ebx
+        enter   0,0
 
 
-		dump_stack 		1, 2, 4						; print out stack from ebp-8 to ebp+16
-		fld 			dword [ebp+8]				; stack: a
-		fld				dword [ebp+12]				; stack: b, a
-		fmulp 			st1							; stack: a*b
-		mov				ebx, dword [ebp+16]			;store in ebx direction of res
-		fstp			dword [ebx]					; store (in res) and pop stack
-        dump_regs 1               					; dump out register values
+        ;dump_stack 		1, 2, 4					; print out stack from ebp-8 to ebp+16
+        fld 			dword [ebp+8]				; stack: a
+        fld			dword [ebp+12]				; stack: b, a
+        fmulp 			st1					; stack: a*b
+        mov			ebx, dword [ebp+16]			;store in ebx direction of res
+        fstp			dword [ebx]				; store (in res) and pop stack
+        ;dump_regs 1               					; dump out register values
  
 ;
 ; leave
 ;
-        
-
-        pop		ebx
-        mov		esp, ebp
-        pop		ebp
-                        
+        ;pop		ebx
+        ;mov		esp, ebp
+        ;pop		ebp
+        leave            
         ret
 
 
