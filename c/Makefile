@@ -18,7 +18,8 @@ default: cryptoCalc
 all: clean default
 
 cryptoCalc: mul.o
-	$(CC) -o cryptoCalc $(SRC)/mul.o -m32 $(SRC)/driver.c -lcurl $(SRC)/asm_io.o
+	$(CC) -c -m32 $(SRC)/driver.c -lcurl -o $(SRC)/driver.o
+	$(CC) -o cryptoCalc $(SRC)/mul.o -m32 $(SRC)/driver.o $(SRC)/asm_io.o
 	@echo "\n"Build terminada!
 
 ##########################################################################################################
