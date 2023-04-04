@@ -10,7 +10,7 @@
 ;
 
 
-%include "asm_io.inc"
+%include "src/asm_io.inc"
 ;
 ; initialized data is put in the .data segment
 ;

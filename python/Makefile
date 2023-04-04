@@ -1,11 +1,12 @@
 ############################################################################################################
 # 
-# 	Makefile CryptoCalculator
+# 	Makefile CryptoCalculator (Python)
 # 
 ############################################################################################################
 
 # Carpetas
 SRC := src
+ASM := $(SRC)/ASM
 LIB := lib
 
 # Compilador
@@ -20,14 +21,18 @@ all: clean default
 ##########################################################################################################
 ##									Creamos los objetos y librerías
 
-# convertCrypto
-convertCrypto: $(SRC)/convertCrypto.c
-	$(CC) -c $(SRC)/convertCrypto.c $(CFLAGS) -o $(SRC)/protocols.o
+
+
+mul.o: 
+	nasm -f elf64 $(ASM)/mul.asm
+
+convertCrypto: $(SRC)/convertCrypto.c mul.o
+	$(CC) -c  $(SRC)/convertCrypto.c $(CFLAGS) -o $(SRC)/protocols.o
 
 # libconverter
-libconverter: convertCrypto $(SRC)/protocols.o
+libconverter: convertCrypto $(SRC)/protocols.o mul.o
 	@mkdir -p lib
-	$(CC) -shared -W -o $(LIB)/libconverter.so $(SRC)/protocols.o
+	$(CC)  -shared -W $(ASM)/mul.o $(SRC)/protocols.o -o $(LIB)/libconverter.so
 	@echo "\n"Build Donde!"\n"
 
 #########################################################################################################
