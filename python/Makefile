@@ -21,19 +21,18 @@ all: clean default
 ##########################################################################################################
 ##									Creamos los objetos y librerías
 
-asm_io.o:
-	nasm -f elf32 -d ELF_TYPE $(ASM)/asm_io.asm
+
 
 mul.o: 
-	nasm -f elf32 $(ASM)/mul.asm
+	nasm -f elf64 $(ASM)/mul.asm
 
 convertCrypto: $(SRC)/convertCrypto.c mul.o
-	$(CC) -c -m32 $(SRC)/convertCrypto.c $(CFLAGS) -o $(SRC)/protocols.o
+	$(CC) -c  $(SRC)/convertCrypto.c $(CFLAGS) -o $(SRC)/protocols.o
 
 # libconverter
 libconverter: convertCrypto $(SRC)/protocols.o mul.o
 	@mkdir -p lib
-	$(CC) -m32 -shared -W $(ASM)/mul.o $(SRC)/protocols.o -o $(LIB)/libconverter.so
+	$(CC)  -shared -W $(ASM)/mul.o $(SRC)/protocols.o -o $(LIB)/libconverter.so
 	@echo "\n"Build Donde!"\n"
 
 #########################################################################################################

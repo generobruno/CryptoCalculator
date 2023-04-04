@@ -1,17 +1,16 @@
 #include <stdio.h>
 
-#include "cdecl.h"
 
-void PRE_CDECL mul( float, float, float *  ) POST_CDECL; /* prototype for assembly routine */
+extern float mul(float base, float exp);
 
 int main(void)
 {
-    float a, b, res;
+		
+    float a, b;
     printf("Number one: ");
     scanf("%f", &a);
     printf("Number two: ");
     scanf("%f", &b);
-    mul(a, b, &res);
-    printf("The result is: %f \n", res);
+    printf("The result is: %f \n", mul(a,b));
     return 0;
 }

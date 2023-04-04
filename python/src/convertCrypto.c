@@ -1,16 +1,16 @@
 #include <stdio.h>
 
-#include "ASM/cdecl.h"
 
-void PRE_CDECL mul( float, float, float *  ) POST_CDECL; /* prototype for assembly routine */
+
+extern float mul(float base, float exp);
 
 float _convert(float rate, float cant) {
-    float res;
-
+    
+		float res;
     // Hacemos la conversión
-    mul(rate, cant, &res);
+    
 
-    res = rate * cant;
+    res = mul(rate, cant);
 
     return res;
 }
