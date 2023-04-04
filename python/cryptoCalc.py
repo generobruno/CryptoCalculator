@@ -20,16 +20,17 @@ def CryptoCalc(cant):
         print('Response to USD OK.')
     else:
         print('Response to USD Failed.')
+        exit(1)
     dataUSD = rUSD.json()
 
     # Hacemos request para obtener el cambio a dolares
-    '''
     toARS = url.replace('PAPER', 'ARS')
     rARS = requests.get(toARS)
     if rUSD:
         print('Response to ARG OK.')
     else:
         print('Response to ARG Failed.')
+        exit(1)
     dataARS = rARS.json()
 
     # Hacemos request para obtener el cambio a dolares
@@ -39,21 +40,21 @@ def CryptoCalc(cant):
         print('Response to EUR OK.')
     else:
         print('Response to EUR Failed.')
+        exit(1)
     dataEUR = rEUR.json()
-    '''
 
-    # Imprimimos el json
-    #print(json.dumps(dataUSD, indent=3))
-    #print(json.dumps(dataARS, indent=3))
-    #print(json.dumps(dataEUR, indent=3))
+    # Formateamos el json
+    json.dumps(dataUSD, indent=3)
+    json.dumps(dataARS, indent=3)
+    json.dumps(dataEUR, indent=3)
 
-    # Hacemos la conversión
-    results = float(dataUSD['Realtime Currency Exchange Rate']['5. Exchange Rate'])
-    #np.append(results, float(dataUSD['Realtime Currency Exchange Rate']['5. Exchange Rate']))
-    #np.append(results, float(dataARS['Realtime Currency Exchange Rate']['5. Exchange Rate']))
-    #np.append(results, float(dataEUR['Realtime Currency Exchange Rate']['5. Exchange Rate']))
+    # Agregamos al array de resultados
+    results = []
+    results.append(float(dataUSD['Realtime Currency Exchange Rate']['5. Exchange Rate']))
+    results.append(float(dataARS['Realtime Currency Exchange Rate']['5. Exchange Rate']))
+    results.append(float(dataEUR['Realtime Currency Exchange Rate']['5. Exchange Rate']))
 
-    print('Resultados de conversión')
+    print('\nResultados de request')
     print(results)
     print()
 
@@ -72,10 +73,20 @@ def CryptoCalc(cant):
 
     # Finalmente llamamos a la función
     print('La conversión de %s a USD es:' % crypto)
-    print(convert(results, cant))
+    print(convert(results[0], cant))
+    
+    print('La conversión de %s a ARS es:' % crypto)
+    print(convert(results[1], cant))
+    
+    print('La conversión de %s a EUR es:' % crypto)
+    print(convert(results[2], cant))
 
 
 if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        print("\nDebe ingresar un valor entero o de punto flotante como argumento\n")
+        exit(1)
+    
     # Tomamos el argumento ingresado por el usuario como la cantidad a convertir
     cant = float(sys.argv[1])
     
