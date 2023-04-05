@@ -1,9 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
 #include <curl/curl.h>
 
 #include "../../inc/cJSON/cJSON.h"
+
+#define MSG_MAX 100
+
+// Función para enviar la información al proceso principal
+void sendVal(char *msg);
 struct MemoryStruct {
   char *memory;
   size_t size;
@@ -27,8 +35,21 @@ static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, voi
  
   return realsize;
 }
- 
-int main(void) {
+
+/**
+ * @brief Ejecuta una request a una API con información sobre el
+ * exchange de cryptomonedas y le envia los datos relevantes al
+ * proceso principal
+ */
+int main(int argc, char const *argv[]) {
+
+  if(argc < 1) {
+    printf("Faltan args.\n");
+    exit(1);
+  } else {
+    printf("Making request...%s\n", argv[1]);
+  }
+
   CURL *curl_handle;
   CURLcode res;
  
@@ -63,17 +84,9 @@ int main(void) {
     fprintf(stderr, "curl_easy_perform() failed: %s\n",
             curl_easy_strerror(res));
   }
-  else {
-    /*
-     * Now, our chunk.memory points to a memory block that is chunk.size
-     * bytes big and contains the remote file.
-     *
-     * Do something nice with it!
-     */
- 
+  else {  // Obtenemos la información en formato json
     printf("%lu bytes retrieved\n", (unsigned long)chunk.size);
-
-    //printf("DATA: \n%s\n", (char *)chunk.memory);
+    printf("DATA: \n%s\n", (char *)chunk.memory);
   }
 
   // Parseamos el json
@@ -97,6 +110,9 @@ int main(void) {
   float rate = (float) atof(exchange->valuestring);
   printf("RATE: %f\n", rate);
 
+  // Enviamos el valor del rate
+  sendVal(exchange->valuestring);
+
   // Eliminamos el objeto de json
   cJSON_Delete(jason);
  
@@ -109,4 +125,47 @@ int main(void) {
   curl_global_cleanup();
  
   return 0;
+}
+
+void sendVal(char *msg) {
+    // File descriptor y ubicación para la FIFO
+    int fd;
+    char *fifo = "/tmp/fifoRequest";
+    char message[MSG_MAX];
+
+    // Abrimos el archivo
+    fd = open(fifo, O_WRONLY | O_NONBLOCK);
+
+    if(fd == -1) {
+        if(errno == ENOENT || errno == ENXIO) {
+            fprintf(stdout, "Server Disconnected.\n");        
+            exit(1);
+        }
+        perror("Error abriendo la FIFO.");
+        exit(1);
+    }
+
+    // Formato del mensaje
+    memset(message,0,sizeof(message));
+    strcpy(message,msg);
+
+    // Escribimos el mensaje en la FIFO
+    if(write(fd, message, sizeof(message)) == -1) {
+        if(errno == EBADF || errno == ENXIO) {
+            fprintf(stdout, "Server Disconnected.\n");  
+            exit(1);
+        } else {
+            perror("Error al leer el mensaje (B).\n");
+            exit(1);
+        }
+    }
+
+    printf("Data sent: %s",message);
+
+    // Cerramos el archivo
+    if(close(fd) == -1) {
+        fprintf(stderr,"Error al cerrar el archivo (B).");
+        exit(1);
+    }
+
 }
