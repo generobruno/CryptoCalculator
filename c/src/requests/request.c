@@ -74,20 +74,30 @@ int main(void) {
     printf("%lu bytes retrieved\n", (unsigned long)chunk.size);
 
 
-    printf("DATA: %s\n", (char *)chunk.memory);
+    printf("DATA: \n%s\n", (char *)chunk.memory);
   }
 
   // TODO Parsear JSON
   cJSON *jason = cJSON_Parse(chunk.memory);
-  const cJSON *data = cJSON_GetObjectItemCaseSensitive(jason, "Realtime Currency Exchange Rate");
-  cJSON *info = NULL;
-  cJSON_ArrayForEach(info, data) {
-    cJSON *rate = cJSON_GetObjectItemCaseSensitive(info, "5. Exchange Rate");
-    if(cJSON_IsNumber(rate)) {
-      printf("RATE: %f\n", rate->valuedouble);
+  if(jason == NULL) {
+      const char *error = cJSON_GetErrorPtr();
+      if(error != NULL) {
+          fprintf(stderr, "ERROR: %s\n", error);
+      }
+  }
+  const cJSON *data = cJSON_GetObjectItem(jason, "Realtime Currency Exchange Rate");
+  cJSON *exchange = NULL;
+  if(data) {
+    exchange = cJSON_GetObjectItemCaseSensitive(data,"5. Exchange Rate");
+    if(cJSON_IsString(exchange)) {
+      printf("RATE: %s\n",exchange->valuestring);
     }
   }
 
+  float rate = (float) atof(exchange->valuestring);
+  printf("FLOAT RATE: %f\n", rate);
+
+  // Eliminamos el objeto de json
   cJSON_Delete(jason);
  
   /* cleanup curl stuff */
