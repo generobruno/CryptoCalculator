@@ -12,6 +12,8 @@
 
 // Función para enviar la información al proceso principal
 void sendVal(char *msg);
+// Función para reemplazar parte del URL
+char *str_replace(char *orig, char *rep, char *with);
 struct MemoryStruct {
   char *memory;
   size_t size;
@@ -41,17 +43,22 @@ static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, voi
  * exchange de cryptomonedas y le envia los datos relevantes al
  * proceso principal
  */
-int main(int argc, char const *argv[]) {
+int main(int argc, char **argv) {
 
+  // Chequeamos argumentos
   if(argc < 1) {
     printf("Faltan args.\n");
     exit(1);
   } else {
-    printf("Making request...%s\n", argv[1]);
+    printf("Making request for %s...\n\n\n\n", argv[1]);
   }
 
   CURL *curl_handle;
   CURLcode res;
+
+  // Reemplazamos en el url la moneda buscada
+  char *origUrl = "https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=BTC&to_currency=PAPER&apikey=EG7JWLOAMEKIU3IR";
+  char *newUrl = str_replace(origUrl,"PAPER", argv[1]);
  
   struct MemoryStruct chunk;
  
@@ -64,8 +71,9 @@ int main(int argc, char const *argv[]) {
   curl_handle = curl_easy_init();
  
   // Especificamos el url 
-  curl_easy_setopt(curl_handle, CURLOPT_URL, "https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=BTC&to_currency=USD&apikey=EG7JWLOAMEKIU3IR");
- 
+  curl_easy_setopt(curl_handle, CURLOPT_URL, newUrl);
+  free(newUrl);
+
   // Enviaremos la información obtenida y la estructura a WriteMemoryCallback
   curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
   curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
@@ -82,7 +90,7 @@ int main(int argc, char const *argv[]) {
             curl_easy_strerror(res));
   } else {  // Obtenemos la información en formato json
     printf("%lu bytes retrieved\n", (unsigned long)chunk.size);
-    printf("DATA: \n%s\n", (char *)chunk.memory);
+    printf("\nDATA: \n%s\n", (char *)chunk.memory);
   }
 
   // Parseamos el json
@@ -101,10 +109,6 @@ int main(int argc, char const *argv[]) {
       printf("Error parsing value\n");
     }
   }
-
-  // Obtenemos el valor en float
-  float rate = (float) atof(exchange->valuestring);
-  printf("RATE: %f\n", rate);
 
   // Enviamos el valor del rate
   sendVal(exchange->valuestring);
@@ -159,7 +163,7 @@ void sendVal(char *msg) {
         }
     }
 
-    printf("Data sent: %s",message);
+    /* printf("Data sent: %s",message); */
 
     // Cerramos el archivo
     if(close(fd) == -1) {
@@ -167,4 +171,61 @@ void sendVal(char *msg) {
         exit(1);
     }
 
+}
+
+// You must free the result if result is non-NULL.
+/**
+ * @brief Reemplaza una parte de un string por el contenido
+ * que especifiquemos. El resultado debe ser liberado luego
+ * de ser utilizado.
+ * 
+ * @param orig String original
+ * @param rep Parte a reemplzar
+ * @param with Substrin que reemplaza a rep
+ * @return char* String modificado
+ */
+char *str_replace(char *orig, char *rep, char *with) {
+    char *result; // the return string
+    char *ins;    // the next insert point
+    char *tmp;    // varies
+    size_t len_rep;  // length of rep (the string to remove)
+    size_t len_with; // length of with (the string to replace rep with)
+    size_t len_front; // distance between rep and end of last rep
+    size_t count;    // number of replacements
+
+    // sanity checks and initialization
+    if (!orig || !rep)
+        return NULL;
+    len_rep = strlen(rep);
+    if (len_rep == 0)
+        return NULL; // empty rep causes infinite loop during count
+    if (!with)
+        with = "";
+    len_with = strlen(with);
+
+    // count the number of replacements needed
+    ins = orig;
+    for (count = 0; (tmp = strstr(ins, rep)); ++count) {
+        ins = tmp + len_rep;
+    }
+
+    tmp = result = malloc(strlen(orig) + (len_with - len_rep) * count + 1);
+
+    if (!result)
+        return NULL;
+
+    // first time through the loop, all the variable are set correctly
+    // from here on,
+    //    tmp points to the end of the result string
+    //    ins points to the next occurrence of rep in orig
+    //    orig points to the remainder of orig after "end of rep"
+    while (count--) {
+        ins = strstr(orig, rep);
+        len_front = (size_t) ins - (size_t) orig;
+        tmp = strncpy(tmp, orig, len_front) + len_front;
+        tmp = strcpy(tmp, with) + len_with;
+        orig += len_front + len_rep; // move to next "end of rep"
+    }
+    strcpy(tmp, orig);
+    return result;
 }

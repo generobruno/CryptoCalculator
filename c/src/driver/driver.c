@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
@@ -22,15 +23,26 @@ float recvVal(void);
  * @brief Hace una conversión de la cantidad de cryptomonedas
  * que le pasemos a dolares, euros y pesos.
  */
-int main(void) {
+int main(int argc, char *argv[]) {
 
+    // Chequeamos argumentos
+    if(argc < 2) {
+        printf("Uso: ./cryptoCalc <moneda>\n");
+        printf("Debe especificar la moneda a convertir {USD, ARS, EUR}\n");
+        exit(1);
+    }
+    if(strcmp(argv[1],"USD\0") && strcmp(argv[1],"ARS\0") && strcmp(argv[1],"EUR\0")) {
+        printf("%s no es aceptado.\n",argv[1]);
+        printf("Debe especificar la moneda a convertir {USD, ARS, EUR}\n");
+        exit(1);
+    }
+
+    // Valores a convertir y resultado
     float a, rate, result;
     createFIFO();
     
     // Hacemos que un hijo ejecute la funcion de request
     pid_t child = fork();
-
-    char *args = "En request";
 
     switch (child)
     {
@@ -38,7 +50,7 @@ int main(void) {
         perror("Error en fork");
         exit(1);
     case 0:     // Caso del hijo
-        execvp("./requester", &args); // TODO Revisar: De esta manera solo funca ejecutando en CryptoCalculator/c.
+        execvp("./requester", argv); // TODO Revisar: De esta manera solo funca ejecutando en CryptoCalculator/c.
         exit(errno);
     default:    // Caso del padre
         // Espera a que el hijo termine
@@ -48,14 +60,14 @@ int main(void) {
         break;
     }
     
-    printf("\n\nRate BTC: %f\n", rate);
+    printf("\n\nRate BTC/USD: %f\n", rate);
     printf("Number to calculate: ");
     scanf("%f", &a);
 
     // Hacemos la conversión
     mul(a, rate, &result);
 
-    printf("\n\nThe result is: %f \n", result);
+    printf("\n\nThe result is: $%f \n\n", result);
 
     return 0;
 }
@@ -104,8 +116,6 @@ void removeFIFO(void) {
     if(unlink(fifo) == -1) {
         fprintf(stderr,"Error eliminando la FIFO anterior (B).");
         exit(1);
-    } else {
-        fprintf(stdout,"FIFO Eliminada con éxito.\n");
     }
 }
 
@@ -147,7 +157,6 @@ float recvVal(void) {
 
     // Obtenemos el valor numerico del string
     float rate = (float) atof(buff);
-    printf("Rate obtenido: %f\n", rate);
 
     return rate;
 }
