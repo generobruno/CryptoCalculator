@@ -73,11 +73,10 @@ int main(void) {
  
     printf("%lu bytes retrieved\n", (unsigned long)chunk.size);
 
-
-    printf("DATA: \n%s\n", (char *)chunk.memory);
+    //printf("DATA: \n%s\n", (char *)chunk.memory);
   }
 
-  // TODO Parsear JSON
+  // Parseamos el json
   cJSON *jason = cJSON_Parse(chunk.memory);
   if(jason == NULL) {
       const char *error = cJSON_GetErrorPtr();
@@ -89,13 +88,14 @@ int main(void) {
   cJSON *exchange = NULL;
   if(data) {
     exchange = cJSON_GetObjectItemCaseSensitive(data,"5. Exchange Rate");
-    if(cJSON_IsString(exchange)) {
-      printf("RATE: %s\n",exchange->valuestring);
+    if(!cJSON_IsString(exchange)) {
+      printf("Error parsing value\n");
     }
   }
 
+  // Obtenemos el valor en float
   float rate = (float) atof(exchange->valuestring);
-  printf("FLOAT RATE: %f\n", rate);
+  printf("RATE: %f\n", rate);
 
   // Eliminamos el objeto de json
   cJSON_Delete(jason);
