@@ -18,6 +18,10 @@ void createFIFO(void);
 void removeFIFO(void);
 float recvVal(void);
 
+/**
+ * @brief Hace una conversión de la cantidad de cryptomonedas
+ * que le pasemos a dolares, euros y pesos.
+ */
 int main(void) {
 
     float a, rate, result;
@@ -56,6 +60,10 @@ int main(void) {
     return 0;
 }
 
+/**
+ * @brief Crea una FIFO para comunicarse con el proceso
+ * que obtiene la tasa de conversión de la cryptomoneda
+ */
 void createFIFO(void) {
     // File descriptor y ubicación para la FIFO
     char *fifo = "/tmp/fifoRequest";
@@ -85,6 +93,9 @@ void createFIFO(void) {
     printf("FIFO Creada\n");
 }
 
+/**
+ * @brief Elimina la FIFO luego de que haya sido utilizada
+ */
 void removeFIFO(void) {
     // File descriptor y ubicación para la FIFO
     char *fifo = "/tmp/fifoRequest";
@@ -98,6 +109,12 @@ void removeFIFO(void) {
     }
 }
 
+/**
+ * @brief Recibe el valor de la tasa de conversión a través
+ * de la FIFO
+ * 
+ * @return float Tasa de conversión
+ */
 float recvVal(void) {
     // File descriptor y ubicación para la FIFO
     char *fifo = "/tmp/fifoRequest";

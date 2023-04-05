@@ -55,36 +55,32 @@ int main(int argc, char const *argv[]) {
  
   struct MemoryStruct chunk;
  
-  chunk.memory = malloc(1);  /* will be grown as needed by the realloc above */
-  chunk.size = 0;    /* no data at this point */
+  chunk.memory = malloc(1);  // Memoria reservada para la info (Crece dinámicamente)
+  chunk.size = 0;            // Aún no hay info
  
   curl_global_init(CURL_GLOBAL_ALL);
  
-  /* init the curl session */
+  // Inicializamos el curl
   curl_handle = curl_easy_init();
  
-  /* specify URL to get */
+  // Especificamos el url 
   curl_easy_setopt(curl_handle, CURLOPT_URL, "https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=BTC&to_currency=USD&apikey=EG7JWLOAMEKIU3IR");
  
-  /* send all data to this function  */
+  // Enviaremos la información obtenida y la estructura a WriteMemoryCallback
   curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
- 
-  /* we pass our 'chunk' struct to the callback function */
   curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
  
-  /* some servers do not like requests that are made without a user-agent
-     field, so we provide one */
+  // Algunos servers precisan esta info (user_agent)
   curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
  
-  /* get it! */
+  // Obtenemos los datos
   res = curl_easy_perform(curl_handle);
  
-  /* check for errors */
+  // Chequeo de errores
   if(res != CURLE_OK) {
     fprintf(stderr, "curl_easy_perform() failed: %s\n",
             curl_easy_strerror(res));
-  }
-  else {  // Obtenemos la información en formato json
+  } else {  // Obtenemos la información en formato json
     printf("%lu bytes retrieved\n", (unsigned long)chunk.size);
     printf("DATA: \n%s\n", (char *)chunk.memory);
   }
@@ -116,17 +112,20 @@ int main(int argc, char const *argv[]) {
   // Eliminamos el objeto de json
   cJSON_Delete(jason);
  
-  /* cleanup curl stuff */
+  // Limpiamos el curl y la memoria
   curl_easy_cleanup(curl_handle);
- 
   free(chunk.memory);
- 
-  /* we are done with libcurl, so clean it up */
   curl_global_cleanup();
  
   return 0;
 }
 
+/**
+ * @brief Envia la información al proceso principal
+ * haciendo uso de una FIFO
+ * 
+ * @param msg Mensaje a enviar
+ */
 void sendVal(char *msg) {
     // File descriptor y ubicación para la FIFO
     int fd;
