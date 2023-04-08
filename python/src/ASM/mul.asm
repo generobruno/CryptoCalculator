@@ -39,13 +39,13 @@ segment .text
 mul:
      
         push	rbp
-        mov		rbp, rsp
+        mov	rbp, rsp
         push	rbx
         
 
 
 
-		mulss			xmm0, xmm1
+	mulss			xmm0, xmm1
 	
        
  

@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
         break;
     }
     
-    printf("\n\nRate BTC/USD: %f\n", rate);
+    printf("\n\nRate BTC/%s: %f\n", argv[1], rate);
     printf("Number to calculate: ");
     scanf("%f", &a);
 
