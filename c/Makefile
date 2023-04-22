@@ -16,7 +16,7 @@ CJSON := $(INC)/CJSON
 
 # Compilador
 CC = 			gcc
-CFLAGS 	= 		-Wall -Werror -pedantic -Wextra -Wconversion -std=gnu11
+CFLAGS 	= 		-Wall -Werror -pedantic -Wextra -Wconversion -g -std=gnu11
 
 # Target
 default: cryptoCalc
@@ -38,10 +38,10 @@ driver.o: mul.o cJSON.o
 	$(CC) -c -m32 $(DRIVER)/driver.c $(CFLAGS) -o $(DRIVER)/driver.o
 
 asm_io.o:
-	nasm -f elf32 -d ELF_TYPE $(ASM)/asm_io.asm -o $(ASM)/asm_io.o
+	nasm -g -f elf32 -d ELF_TYPE $(ASM)/asm_io.asm -o $(ASM)/asm_io.o
 
 mul.o: asm_io.o
-	nasm -f elf32 $(ASM)/mul.asm -o $(ASM)/mul.o
+	nasm -g -f elf32 $(ASM)/mul.asm -o $(ASM)/mul.o
 
 cJSON.o: 
 	$(CC) -c $(UTILS)/cJSON.c $(CFLAGS) -o $(UTILS)/cJSON.o
